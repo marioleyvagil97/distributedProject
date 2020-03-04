@@ -6,11 +6,15 @@
 package server;
 
 import distributedproject.persona;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import server.hiloSocket;
 /**
  *
  * @author mario
@@ -22,30 +26,62 @@ public class Server {
      * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        ServerSocket ss = new ServerSocket(666);
-        Socket so = null;
-        ObjectInputStream entrada = null;
-        System.out.println("Servidor");
+        ServerSocket ss;
+        Socket so;
+        DataOutputStream salida;
+        BufferedInputStream bis;
+        BufferedOutputStream bos;
+        byte[] recibido;
+        int i;
+        String archivo="";
         persona per = null;
+        
+  
+//            //write from socket onto the file
+//            
+//               do {
+//         bytesRead =
+//            sock.getInputStream().read(byteArray, current, (byteArray.length-current));
+//         if(bytesRead >= 0) 
+//             current += bytesRead;
+//      } while(bytesRead > -1);
+//            
+//            bos.write(byteArray, 0, current);
+//            bos.flush();
+//            bos.close();
+//            sock.close();
+        
         try{
-            
+            ss = new ServerSocket(666);
            while(true){
                System.out.println("Esperando una conexion...");
-               so = ss.accept(); 
-                
-                //Recibimos el objeto desde el cliente
-                if(so.getInputStream()!=null){
-                entrada = new ObjectInputStream(so.getInputStream());
-                per = (persona)entrada.readObject();
-                
-                //Confirmamos que recibimos el objeto
-                System.out.println("Recibi la persona con el nombre "+per.getNombre());
-                }
-           } 
-        }finally{
-            ss.close();
+               so = ss.accept();
+               recibido = new byte[1024];
+               
+               int bytesRead=so.getInputStream().read(recibido, 0, recibido.length);
+               i=bytesRead;
+               
+               
+                //prepare an an output file
+            FileOutputStream fos=new FileOutputStream("C:\\practica distribuidos\\recibido.json");
+            bos=new BufferedOutputStream (fos);
+               
+                //write from socket onto the file           
+               do {
+         bytesRead =
+            so.getInputStream().read(recibido, i, (recibido.length-i));
+         if(bytesRead >= 0) 
+             i += bytesRead;
+      } while(bytesRead > -1);
+            
+            bos.write(recibido, 0, i);
+            bos.flush();
+            bos.close();
             so.close();
-            entrada.close();
+               
+            } 
+        }catch(Exception ex){
+    System.err.println(ex);
         }
     }
     

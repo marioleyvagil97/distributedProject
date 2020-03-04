@@ -1,16 +1,17 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package client;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 import distributedproject.persona;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
 
 /**
  *
@@ -22,17 +23,41 @@ public class Client {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
-         // TODO code application logic here
-         Socket sc=new Socket("localhost",666);//conectarse al Server con IP/nombre y puerto
+        // Creamos las variables necesarias para enviar el archivo
+         DataInputStream dis;
+         BufferedInputStream bis;
+         BufferedOutputStream bos;
+         int i;
+         byte[] byteArray;
+         String ruta = "C:\\practica distribuidos\\enviar.json";
          
-         //Enviar el objeto
-        persona per = new persona("Juan",1.80,80.0);
-        ObjectOutputStream objeto = new ObjectOutputStream(sc.getOutputStream()); 
-        objeto.writeObject(per);
-         
-        //Cerramos el socket
-        objeto.close();
-       sc.close();
+               
+         try{
+           File archivo = new File(ruta);
+           Socket sc=new Socket("localhost",666);
+           bis = new BufferedInputStream(new FileInputStream(archivo));
+           bos = new BufferedOutputStream(sc.getOutputStream());
+           
+           //Leemos el archivo a enviar
+            byteArray=new byte[(int)archivo.length()];
+            bis.read(byteArray, 0, byteArray.length);
+            
+             /** now that the file is read, we write it on our socket **/
+            /** instead of object streams or files streams we build a generic outputstream**/
+            OutputStream os=sc.getOutputStream();
+            os.write(byteArray, 0, byteArray.length);
+            os.flush();
+           
+            //CLOSE
+            
+           //cerramos el input y output stream
+           bis.close();
+           bos.close();
+           os.close();
+           sc.close();
+         }catch (Exception ex){
+             System.err.println(ex);
+         }
     }
     
 }
